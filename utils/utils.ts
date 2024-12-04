@@ -14,7 +14,7 @@ export const readFile = (filePath: string): Promise<string> => {
 
 export const writeFile = (filePath: string, data: string): Promise<string> => {
     return new Promise((resolve, reject) => {
-        fs.writeFile(filePath, data ,'utf-8', (err) => {
+        fs.writeFile(filePath, data, 'utf-8', (err) => {
             if (err) {
                 console.error(err);
                 reject(err);
@@ -96,7 +96,30 @@ export const sleep = (ms: number): Promise<void> => {
 }
 
 export type Direction = "Up" | "Down" | "Left" | "Right";
-const ALL_DIRECTIONS: Direction[] = ["Up", "Down", "Left", "Right"];
+export type DirectionDiag = Direction | "UpLeft" | "UpRight" | "DownLeft" | "DownRight";
+export const ALL_DIRECTIONS: Direction[] = ["Up", "Down", "Left", "Right"];
+export const ALL_DIRECTIONS_DIAG: DirectionDiag[] = [...ALL_DIRECTIONS, "UpLeft", "UpRight", "DownRight", "DownLeft"];
+
+export const getNeighbour = (i: number, j: number, direction: DirectionDiag, magnitude = 1): { i: number, j: number } => {
+    switch (direction) {
+        case 'Up':
+            return { i: i - magnitude, j };
+        case 'Down':
+            return { i: i + magnitude, j };
+        case 'Left':
+            return { i: i, j: j - magnitude };
+        case 'Right':
+            return { i: i, j: j + magnitude };
+        case 'UpLeft':
+            return { i: i - magnitude, j: j - magnitude };
+        case 'UpRight':
+            return { i: i - magnitude, j: j + magnitude };
+        case 'DownLeft':
+            return { i: i + magnitude, j: j - magnitude };
+        case 'DownRight':
+            return { i: i + magnitude, j: j + magnitude };
+    }
+}
 
 export class Coordinate {
     i: number;
