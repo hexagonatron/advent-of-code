@@ -95,6 +95,13 @@ export const sleep = (ms: number): Promise<void> => {
     })
 }
 
+export const invertCoord = (coord: {i: number, j: number}) => {
+    return {
+        i: coord.i * -1,
+        j: coord.j * -1,
+    };
+}
+
 export type Direction = "Up" | "Down" | "Left" | "Right";
 export type DirectionDiag = Direction | "UpLeft" | "UpRight" | "DownLeft" | "DownRight";
 export const ALL_DIRECTIONS: Direction[] = ["Up", "Down", "Left", "Right"];
@@ -173,6 +180,16 @@ export class Coordinate {
 
     public getCoordinate() {
         return new Coordinate(this.i, this.j);
+    }
+
+    public getDifference(other: Coordinate): {i: number, j: number} {
+        const i = this.i - other.i;
+        const j = this.j - other.j;
+        return {i, j};
+    }
+
+    public addCoordinate(mag: {i: number, j: number}): Coordinate {
+        return new Coordinate(this.i + mag.i, this.j + mag.j);
     }
 }
 
