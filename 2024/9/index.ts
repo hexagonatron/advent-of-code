@@ -65,6 +65,8 @@ const main = async () => {
 
   const defragP2 = () => {
     let j = mem.length - 1;
+                          //1,2,3,4,5,6,7,8,9
+    const lastGapForSize: number[] = [0,0,0,0,0,0,0,0,0];
     loop1:
     while (j > 0) {
       if (j % 500 === 0) {
@@ -77,14 +79,20 @@ const main = async () => {
       }
       const sizeToFit = val.size;
 
+      const lastFoundGap = lastGapForSize[sizeToFit -1];
+      if (lastFoundGap === undefined) {
+        throw 'Last found gap missing';
+      }
+
       let emptyIdxs = [];
-      for (let i = 0; i <= j - sizeToFit; i++) {
+      for (let i = lastFoundGap; i <= j - sizeToFit; i++) {
         if (mem[i].id != 'empty') {
           emptyIdxs = [];
           continue;
         }
         emptyIdxs.push(i);
         if (emptyIdxs.length === sizeToFit) {
+          lastGapForSize[sizeToFit -1] = i;
           for (let m = 0; m < emptyIdxs.length; m++) {
             const swapIdx = emptyIdxs[m];
             [mem[swapIdx], mem[j - m]] = [mem[j - m], mem[swapIdx]]
