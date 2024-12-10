@@ -50,12 +50,23 @@ export const transposeStringArr = (array: string[]) => {
     return transpose(array.map(r => r.split(''))).map(r => r.join(''));
 }
 
-export const iterateMultiDimensional = <T, U>(array: T[][], callback: (element: T, i: number, j: number) => U) => {
+export const iterateMultiDimensional = <T, U>(array: T[][], callback: (element: T, i: number, j: number) => U): U[][] => {
+    const newArr: U[][] = [];
     for (let i = 0; i < array.length; i++) {
+        newArr.push([]);
         for (let j = 0; j < array[i].length; j++) {
-            callback(array[i][j], i, j);
+            newArr[i].push(callback(array[i][j], i, j));
         }
     }
+    return newArr;
+}
+
+export const isInBounds = <T>(board: T[][], i: number, j: number): boolean => {
+    return i >= 0 && j >= 0 && i < board.length && j < board[0].length;
+}
+
+export const isCoordinateInBounds = <T>(board: T[][], coordinate: Coordinate): boolean => {
+    return isInBounds(board, coordinate.i, coordinate.j);
 }
 
 export const matchAll = (string: string, regex: RegExp) => {
