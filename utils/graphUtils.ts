@@ -32,6 +32,8 @@ export class WeightedEdge extends Edge {
     }
 }
 
+type PathSolvedPredicate = (path: string[]) => boolean
+
 export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>>{
     nodes: NodeType[];
     nodeMap: {
@@ -43,6 +45,42 @@ export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>>{
         nodes.forEach((n) => {
             this.nodeMap[n.id] = n;
         });
+    }
+
+    public findPathsBFS(startingNodes: string[], pathIsSolved: PathSolvedPredicate): string[][] {
+
+    const solvedPaths: string[][] = [];
+
+    for (let i = 0; i < startingNodes.length; i++) {
+      const workingNode = this.nodeMap[startingNodes[i]];
+      if (!workingNode) {
+        throw 'Node not found';
+      }
+      workingNode.visited = true;
+      let workingPaths: string[][] = [[workingNode.id]];
+
+      while (workingPaths.length > 0) {
+        const nextPaths: string[][] = [];
+        const workingPath = workingPaths.pop();
+        if (!workingPath || workingPath.length === 0) {
+          throw "Invalid Path";
+        }
+
+        if (pathIsSolved.bind(this)(workingPath)) {
+          solvedPaths.push(workingPath);
+          continue;
+        }
+        const lastNode = this.nodeMap[workingPath[workingPath.length - 1]];
+        if (lastNode.edges.length) {
+          lastNode.edges.forEach(edge => {
+            nextPaths.push([...workingPath, edge.toNodeId]);
+          });
+        }
+        workingPaths = [...nextPaths, ...workingPaths];
+      }
+
+    }
+    return solvedPaths;
     }
 }
 
