@@ -24,8 +24,16 @@ export const writeFile = (filePath: string, data: string): Promise<string> => {
     })
 }
 
+export const splitToGrid = <T>(string: string, mapper: (i: number, j: number, value: string) => T): T[][] => {
+    return string.split(/\r?\n/g).map((line, i) => line.split('').map((value, j) => mapper(i, j, value)));
+}
+
 export const sum = (arr: number[]): number => {
     return arr.reduce((acc, v) => acc + v, 0);
+}
+
+export const avg = (...numbers: number[]) => {
+    return numbers.reduce((a, v) => a + v, 0) / numbers.length;
 }
 
 export const sumObjArr = <T>(objArr: T[], provider: (obj: T) => number) => {
@@ -106,7 +114,7 @@ export const sleep = (ms: number): Promise<void> => {
     })
 }
 
-export const invertCoord = (coord: {i: number, j: number}) => {
+export const invertCoord = (coord: { i: number, j: number }) => {
     return {
         i: coord.i * -1,
         j: coord.j * -1,
@@ -193,13 +201,13 @@ export class Coordinate {
         return new Coordinate(this.i, this.j);
     }
 
-    public getDifference(other: Coordinate): {i: number, j: number} {
+    public getDifference(other: Coordinate): { i: number, j: number } {
         const i = this.i - other.i;
         const j = this.j - other.j;
-        return {i, j};
+        return { i, j };
     }
 
-    public addCoordinate(mag: {i: number, j: number}): Coordinate {
+    public addCoordinate(mag: { i: number, j: number }): Coordinate {
         return new Coordinate(this.i + mag.i, this.j + mag.j);
     }
 }
@@ -215,4 +223,52 @@ export class CoordinateDirection extends Coordinate {
     public copy() {
         return new CoordinateDirection(this.i, this.j, this.direction);
     }
+}
+
+const isNotAGrid = <T>(points: T[][]): boolean => {
+    if (points.length === 0) {
+        return true;
+    }
+
+    const firstLength = points[0].length
+    if (firstLength === 0) {
+        return true;
+    }
+
+    return !points.every(row => row.length === firstLength);
+}
+
+export class Grid<T extends Coordinate> {
+    points: T[][];
+
+    constructor(points: T[][]) {
+        if (isNotAGrid(points)) {
+            throw "Points don't adhere to grid";
+        }
+        this.points = points;
+    }
+
+    getByPoint(i: number, j: number): T {
+        if (!this.isInGrid(i, j)) {
+            throw 'Point not in grid';
+        }
+        return this.points[i][j];
+    }
+
+    getByCoordinate(coordinate: Coordinate) {
+        return this.getByPoint(coordinate.i, coordinate.j);
+    }
+
+    isInGrid(i: number, j: number) {
+        return isCoordinateInBounds(this.points, new Coordinate(i, j));
+    }
+
+    isCoordinateInGrid(coordinate: Coordinate) {
+        return this.isInGrid(coordinate.i, coordinate.j);
+    }
+
+    map<U>(callback: (value: T, i: number, j: number) => U): U[][] {
+        return iterateMultiDimensional<T, U>(this.points, callback);
+    }
+
 }
