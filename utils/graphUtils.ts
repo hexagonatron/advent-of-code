@@ -166,7 +166,7 @@ export class WeightedGraph<EdgeType extends WeightedEdge, NodeType extends Node<
       if (DEBUG) {
         if (i % 10_000 === 0) {
           if (printFn) {
-            printFn(workingPath.path);
+            printFn([...workingPath.path]);
           }
           console.log({
             iterations: i,

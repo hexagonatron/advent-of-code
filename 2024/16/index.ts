@@ -172,10 +172,6 @@ const main = async () => {
 
   const shortestPaths = graph.findShortestPathDijkstra(startingNode, allFinishingNodeIds, true, maze.printPath.bind(maze));
 
-  shortestPaths.map(path => {
-    console.log(path.total)
-    maze.printPath(path.path)
-  });
   const stringSet = new Set<string>();
   shortestPaths.map(path => path.path.map(hash => stringSet.add(hash.substring(0, hash.length -2))));
 
