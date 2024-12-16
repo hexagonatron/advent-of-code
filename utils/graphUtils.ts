@@ -1,3 +1,5 @@
+import { PriorityQueue } from "./PriorityQueue";
+
 export class Node<T extends Edge> {
   id: string;
   edges: T[];
@@ -129,49 +131,56 @@ export class WeightedGraph<EdgeType extends WeightedEdge, NodeType extends Node<
     super(nodes);
   }
 
-  findShortestPathDijkstra(fromNodeId: string, toNodeIds: string[], hasVisited: (path: string[], nodeId: string) => boolean, findAllPaths = false, printFn?: (path: string[]) => void): PathWithTotal[] {
+  findShortestPathDijkstra(fromNodeId: string, toNodeIds: string[], findAllPaths = false, printFn?: (path: string[]) => void): PathWithTotal[] {
 
     const solvedPaths: PathWithTotal[] = []
 
     const initialPath: PathWithTotal = new PathWithTotal([fromNodeId], 0);
-    let workingPath = initialPath;
-    let allPathsOrdered: PathWithTotal[] = [workingPath];
+    let allPathsOrdered: PriorityQueue<PathWithTotal> = new PriorityQueue();
+    allPathsOrdered.push(0, initialPath);
     let i = 0;
-    while (!toNodeIds.includes(workingPath.getCurrentNodeId()) || findAllPaths && allPathsOrdered.length) {
+    let minimumSolved: number | null = null;
+    while (allPathsOrdered.length > 0) {
+
+      const workingPath = allPathsOrdered.pop();
+      if (!workingPath) {
+        break;
+      }
+      if (toNodeIds.includes(workingPath.getCurrentNodeId())) {
+        if (minimumSolved === null) {
+          minimumSolved = workingPath.total;
+          solvedPaths.push(workingPath);
+        } else if (workingPath.total === minimumSolved) {
+          solvedPaths.push(workingPath);
+        } else if (workingPath.total < minimumSolved) {
+          throw `Solved ${workingPath.total} is less than minimum solved ${minimumSolved}`;
+        }
+
+        if (!findAllPaths) {
+          return solvedPaths;
+        }
+        continue;
+      }
+
       i++;
       if (DEBUG) {
         if (i % 10_000 === 0) {
-          console.log(i);
           if (printFn) {
             printFn(workingPath.path);
           }
+          console.log({
+            iterations: i,
+            queueLength: allPathsOrdered.length,
+            currentTotal: workingPath.total,
+          });
         }
       }
-      if (toNodeIds.includes(workingPath.getCurrentNodeId())) {
-        const existingSolved = solvedPaths[0];
-        if (existingSolved && existingSolved.total === workingPath.total || !existingSolved) {
-          solvedPaths.push(workingPath);
-        }
-        const newWorkingPath = allPathsOrdered.shift();
-        if (!newWorkingPath) {
-          break;
-        }
-        workingPath = newWorkingPath;
-      }
-      const firstSolved = solvedPaths[0];
-      if (firstSolved && firstSolved.total < workingPath.total) {
-        const newWorkingPath = allPathsOrdered.shift();
-        if (!newWorkingPath) {
-          break;
-        }
-        workingPath = newWorkingPath;
-        continue;
-      }
+
       const currentNode = this.getNode(workingPath.getCurrentNodeId());
-      const newPaths: PathWithTotal[] = [];
-      currentNode.edges.filter(edge => !hasVisited(workingPath.path, edge.toNodeId)).filter(edge => {
+      currentNode.visited = true;
+      currentNode.edges.filter(edge => {
         const toNode = this.getNode(edge.toNodeId);
-        return toNode.smallestPathTotal >= (workingPath.total + edge.weight);
+        return !toNode.visited && toNode.smallestPathTotal >= (workingPath.total + edge.weight)
       }).forEach(edge => {
         const newPath = workingPath.copy();
         newPath.addNode(edge.toNodeId, edge.weight);
@@ -179,14 +188,8 @@ export class WeightedGraph<EdgeType extends WeightedEdge, NodeType extends Node<
         if (newPath.total < toNode.smallestPathTotal) {
           toNode.smallestPathTotal = newPath.total;
         }
-        newPaths.push(newPath);
+        allPathsOrdered.push(newPath.total, newPath);
       });
-      allPathsOrdered = allPathsOrdered.concat(newPaths).sort((pathA, pathB) => pathA.compare(pathB));
-      const newWorkingPath = allPathsOrdered.shift();
-      if (!newWorkingPath) {
-        break;
-      }
-      workingPath = newWorkingPath;
     }
     return solvedPaths;
   }

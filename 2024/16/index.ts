@@ -123,8 +123,12 @@ class MazeEdge extends WeightedEdge {
 }
 
 class MazeNode extends Node<MazeEdge> {
-  constructor(id: string, edges: MazeEdge[]) {
+  coordinate: Coordinate;
+  facingDirection: Direction;
+  constructor(id: string, edges: MazeEdge[], coordinate: Coordinate, facingDirection: Direction) {
     super(id, edges, false);
+    this.coordinate = coordinate;
+    this.facingDirection = facingDirection;
   }
 }
 
@@ -159,41 +163,27 @@ const main = async () => {
         edges.push(new MazeEdge(cell.getNodeId(direction), cell.getNodeId(turnDirection), turnCost));
       });
       edges.sort((a, b) => a.weight - b.weight);
-      console.log(edges);
-      nodes.push(new MazeNode(cell.getNodeId(direction), edges));
+      nodes.push(new MazeNode(cell.getNodeId(direction), edges, cell.getCoordinate(), direction));
     });
   });
   const graph = new MazeGraph(nodes);
   const startingNode = maze.startPosition.getNodeId('Right');
   const allFinishingNodeIds = ALL_DIRECTIONS.map(direction => maze.endPosition.getNodeId(direction));
 
-  const hasVisited = (currentPath: string[], proposedNodeId: string) => {
-    const nodeIdsSansD = currentPath.map(nodeId => nodeId.substring(0, nodeId.length - 2));
-    const proposedNodeIdSansD = proposedNodeId.substring(0, proposedNodeId.length - 2);
-    let result = false;
-    if (currentPath.includes(proposedNodeId)) {
-      result = true;
-    } else if (nodeIdsSansD[nodeIdsSansD.length - 1] === proposedNodeIdSansD) {
-      result = false;
-    } else {
-      result = nodeIdsSansD.includes(proposedNodeIdSansD)
-    }
-    // console.log({ result, nodeIdsSansD, proposedNodeIdSansD, currentPath, proposedNodeId });
-    return result;
-  }
+  const shortestPaths = graph.findShortestPathDijkstra(startingNode, allFinishingNodeIds, true, maze.printPath.bind(maze));
 
-  const shortestPaths = graph.findShortestPathDijkstra(startingNode, allFinishingNodeIds, hasVisited, true, maze.printPath.bind(maze));
-  console.log(shortestPaths[0]);
   shortestPaths.map(path => {
     console.log(path.total)
     maze.printPath(path.path)
   });
-  console.log(shortestPaths.length);
   const stringSet = new Set<string>();
   shortestPaths.map(path => path.path.map(hash => stringSet.add(hash.substring(0, hash.length -2))));
-  console.log(stringSet.size);
 
-  console.log([...stringSet]);
+  console.log({
+    part1_minimumTotal: shortestPaths[0].total,
+    part2_uniquePoints: stringSet.size,
+  });
+
 };
 
 main();
