@@ -270,5 +270,8 @@ export class Grid<T extends Coordinate> {
     map<U>(callback: (value: T, i: number, j: number) => U): U[][] {
         return iterateMultiDimensional<T, U>(this.points, callback);
     }
+    flatMap<U>(callback: (value: T, i: number, j: number) => U): U[] {
+        return iterateMultiDimensional<T, U>(this.points, callback).flat();
+    }
 
 }

@@ -58,7 +58,7 @@ export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>> {
     return node;
   }
 
-  public findPathsBFS(startingNodes: string[], pathIsSolved: PathSolvedPredicate): string[][] {
+  public findPathsBFS(startingNodes: string[], pathIsSolved: PathSolvedPredicate, returnFirstSolved = false): string[][] {
 
     const solvedPaths: string[][] = [];
 
@@ -79,12 +79,19 @@ export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>> {
 
         if (pathIsSolved.bind(this)(workingPath)) {
           solvedPaths.push(workingPath);
+          if (returnFirstSolved) {
+            return solvedPaths;
+          }
           continue;
         }
         const lastNode = this.nodeMap[workingPath[workingPath.length - 1]];
         if (lastNode.edges.length) {
           lastNode.edges.forEach(edge => {
-            nextPaths.push([...workingPath, edge.toNodeId]);
+            const toNode = this.getNode(edge.toNodeId);
+            if (!toNode.visited) {
+              toNode.visited = true;
+              nextPaths.push([...workingPath, edge.toNodeId]);
+            }
           });
         }
         workingPaths = [...nextPaths, ...workingPaths];
@@ -92,6 +99,27 @@ export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>> {
 
     }
     return solvedPaths;
+  }
+
+  public areNodesConnected(nodeId1: string, nodeId2: string) {
+    const startNode = this.getNode(nodeId1);
+    startNode.visited = true;
+    const toDo: NodeType[] = [startNode];
+    while (toDo.length > 0) {
+      const node = toDo.shift();
+      if (!node) {
+        return false;
+      }
+      if (node.id === nodeId2) {
+        return true;
+      }
+      node.visited = true;
+      node.edges.map(edge => this.getNode(edge.toNodeId)).filter(node => !node.visited).forEach(node => {
+        node.visited = true;
+        toDo.push(node);
+      });
+    }
+    return false;
   }
 
 }
