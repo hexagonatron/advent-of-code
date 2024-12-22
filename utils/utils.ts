@@ -177,6 +177,23 @@ export class Coordinate {
         }
     };
 
+    public getCoordinatesInStepRange(steps: number): Coordinate[] {
+        const coordinates: Coordinate[] = [];
+        for (let i = steps * -1; i <= steps; i++) {
+            const absI = Math.abs(i);
+            const remaining = steps - absI;
+            for (let j = remaining * -1; j <= remaining; j++) {
+                const newI = this.i + i;
+                const newJ = this.j + j;
+                const coordinate = new Coordinate(newI, newJ);
+                if (!this.isEqual(coordinate)) {
+                    coordinates.push(coordinate);
+                }
+            }
+        }
+        return coordinates;
+    }
+
     public getCoordinatesPassedThrough(direction: Direction, magnitude: number) {
         const coordinates: Coordinate[] = [];
         for (let i = 1; i <= magnitude; i++) {
@@ -205,6 +222,10 @@ export class Coordinate {
         const i = this.i - other.i;
         const j = this.j - other.j;
         return { i, j };
+    }
+    public getStepsToReach(other: Coordinate): number {
+        const {i, j} = this.getDifference(other);
+        return Math.abs(i) + Math.abs(j);
     }
 
     public addCoordinate(mag: { i: number, j: number }): Coordinate {

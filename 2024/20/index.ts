@@ -62,7 +62,7 @@ class RaceTrack extends Grid<TrackCoord> {
   }
 
   getEnd(): TrackCoord {
-    let end : TrackCoord | null = null;
+    let end: TrackCoord | null = null;
     this.map((v) => {
       if (v.isEnd()) {
         end = v;
@@ -88,7 +88,7 @@ class RaceTrack extends Grid<TrackCoord> {
 }
 
 const main = async () => {
-  const dataStr = await readFile(path.resolve(__dirname, "./input1.txt"));
+  const dataStr = await readFile(path.resolve(__dirname, "./input.txt"));
   const points = splitToGrid(dataStr, (i: number, j: number, value: string) => {
     if (!isValueType(value)) {
       throw `Unexpected input: ${value}`;
@@ -114,7 +114,7 @@ const main = async () => {
   const graph: Graph<Edge, Node<Edge>> = new Graph(nodes);
 
   const trackPath = graph.findPathsBFS([start.hash()], (workingPath) => {
-    return workingPath[workingPath.length -1] === end.hash();
+    return workingPath[workingPath.length - 1] === end.hash();
   }, true)[0];
   if (!trackPath) {
     throw 'Path not found';
@@ -124,17 +124,51 @@ const main = async () => {
   track.print(trackPath);
   console.log(trackPath.length - 1);
 
-  const map: {[key: string]: number} = {};
+  const countCheatsGreaterThan = (cheatLength: number, cheatMin: number): number => {
+    const map: { [key: string]: number } = {};
 
-  trackPath.forEach((point, pointIdx) => {
-    const [i, j] = point.split(',').map(v => +v);
-    const coord = new Coordinate(i,j);
-    ALL_DIRECTIONS.map(dir => coord.getCoordinateFromVector(dir, 2)).map(c => c.hash()).map(pointHash => {
-      const foundIdx = trackPath.findIndex(v => v === pointHash);
-      if (foundIdx === -)
+    trackPath.forEach((point, pointIdx) => {
+      if (pointIdx % 100 === 0) {
+        console.log(`Index: ${pointIdx}, ${Math.floor(pointIdx / trackPath.length * 100)}% Complete`)
+      }
+      const [i, j] = point.split(',').map(v => +v);
+      const coord = new Coordinate(i, j);
+      coord.getCoordinatesInStepRange(cheatLength).filter(c => track.isCoordinateInGrid(c)).map(c => {
+        const pointHash = c.hash();
+        const lengthOfCheat = coord.getStepsToReach(c);
+        const foundIdx = trackPath.findIndex(v => v === pointHash);
+        if (foundIdx === -1) {
+          return;
+        }
+        if (foundIdx < pointIdx) {
+          return;
+        }
+        const difference = foundIdx - pointIdx - lengthOfCheat;
+        if (difference <= 0) {
+          return;
+        }
+        map[difference] = map[difference] === undefined ? 1 : map[difference] + 1;
+      });
     });
 
-  })
+    const total = Object.entries(map).reduce((a, [key, value]) => {
+      const keyNum = +key;
+      if (keyNum >= cheatMin) {
+        return a + value;
+      } else {
+        return a;
+      }
+    }, 0);
+
+    console.log(map);
+    return total;
+
+  }
+
+  const totalP1 = countCheatsGreaterThan(2, 100);
+  const totalP2 = countCheatsGreaterThan(20, 100);
+
+  console.log({ totalP1, totalP2});
 };
 
 main();
