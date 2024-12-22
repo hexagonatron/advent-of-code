@@ -129,8 +129,9 @@ const main = async () => {
   trackPath.forEach((point, pointIdx) => {
     const [i, j] = point.split(',').map(v => +v);
     const coord = new Coordinate(i,j);
-    ALL_DIRECTIONS.map(dir => coord.getCoordinateFromVector(dir, 2)).map(c => c.hash()).map(point => {
-
+    ALL_DIRECTIONS.map(dir => coord.getCoordinateFromVector(dir, 2)).map(c => c.hash()).map(pointHash => {
+      const foundIdx = trackPath.findIndex(v => v === pointHash);
+      if (foundIdx === -)
     });
 
   })
