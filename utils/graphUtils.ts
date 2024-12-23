@@ -16,6 +16,14 @@ export class Node<T extends Edge> {
     this.visited = visited;
     this.smallestPathTotal = Number.MAX_SAFE_INTEGER;
   }
+
+  addEdge(edge: T) {
+    this.edges.push(edge);
+  }
+  toString(tabs = 0): string {
+    const edgeStr = this.edges.map(e => '\t'.repeat(tabs) + e.toString(tabs + 1)).join('\n');
+    return `Node Id: ${this.id}` + '\n' + edgeStr;
+  }
 }
 
 export class Edge {
@@ -26,6 +34,10 @@ export class Edge {
   constructor(fromNodeId: string, toNodeId: string) {
     this.fromNodeId = fromNodeId;
     this.toNodeId = toNodeId;
+  }
+  toString(tabs = 0) {
+    const str = `\t`.repeat(tabs) + `-> ${this.toNodeId}`;
+    return str;
   }
 }
 export class WeightedEdge extends Edge {
@@ -120,6 +132,13 @@ export class Graph<EdgeType extends Edge, NodeType extends Node<EdgeType>> {
       });
     }
     return false;
+  }
+  toString(): string {
+    return this.nodes.map(n => n.toString()).join('\n');
+  }
+  print() {
+    console.log(this.toString());
+    console.log('');
   }
 
 }
