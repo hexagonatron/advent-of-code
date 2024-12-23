@@ -126,6 +126,8 @@ export type DirectionDiag = Direction | "UpLeft" | "UpRight" | "DownLeft" | "Dow
 export const ALL_DIRECTIONS: Direction[] = ["Up", "Down", "Left", "Right"];
 export const ALL_DIRECTIONS_DIAG: DirectionDiag[] = [...ALL_DIRECTIONS, "UpLeft", "UpRight", "DownRight", "DownLeft"];
 
+export type Vector = {direction: Direction, magnitude: number};
+
 export const getNeighbour = (i: number, j: number, direction: DirectionDiag, magnitude = 1): { i: number, j: number } => {
     switch (direction) {
         case 'Up':
