@@ -298,3 +298,22 @@ export class Grid<T extends Coordinate> {
     }
 
 }
+
+export const getCombinations = (options: string[], size: number): string[][] => {
+  if (size === 1) {
+    return options.map(o => [o]);
+  }
+  const combos: string[][] = [];
+
+  options.forEach((option, idx) => {
+    const smallerCombos = getCombinations(
+      options.slice(idx + 1),
+      size - 1
+    );
+    smallerCombos.forEach(smallComb => {
+      combos.push([option].concat(smallComb));
+    });
+  });
+  combos.forEach(c => c.sort());
+  return combos;
+}

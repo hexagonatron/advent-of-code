@@ -1,27 +1,9 @@
 import { Edge, Graph, Node } from "../../utils/graphUtils";
 import {
   readFile,
+  getCombinations
 } from "../../utils/utils";
 import path from "path";
-
-const getCombs = (options: string[], size: number): string[][] => {
-  if (size === 1) {
-    return options.map(o => [o]);
-  }
-  const combos: string[][] = [];
-
-  options.forEach((option, idx) => {
-    const smallerCombos = getCombs(
-      options.slice(idx + 1),
-      size - 1
-    );
-    smallerCombos.forEach(smallComb => {
-      combos.push([option].concat(smallComb));
-    });
-  });
-  combos.forEach(c => c.sort());
-  return combos;
-}
 
 class BiDirectionalNode extends Node<Edge> {
   constructor(id: string) {
@@ -66,7 +48,7 @@ class BiDirectionalGraph extends Graph<Edge, BiDirectionalNode> {
       if (workingNode.edges.length >= size -1) {
         const connectedNodes = workingNode.edges.map(e => e.toNodeId);
 
-        const possibleCombs = getCombs([workingNode.id, ...connectedNodes], size);
+        const possibleCombs = getCombinations([workingNode.id, ...connectedNodes], size);
 
         possibleCombs
           .filter(c => c[0] === workingNode.id)
